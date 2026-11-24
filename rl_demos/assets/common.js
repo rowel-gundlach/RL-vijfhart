@@ -77,3 +77,6 @@ function lineChart(canvas, series, { title = "", height = 280, xLabel = "", step
 }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// €1,250 or −€60 (a real minus sign before the euro sign)
+const euro = x => (x < 0 ? "−€" : "€") + Math.abs(Math.round(x)).toLocaleString("en");

@@ -195,7 +195,7 @@ def train_pricing(q, episodes, env, rng, epsilon, alpha=0.1, gamma=1.0, tried=No
             target = reward + (0 if after is None else gamma * q[after].max())
             q[key] += alpha * (target - q[key])
             if tried is not None:
-                tried[key] = True
+                tried[key] += 1               # how often this price was tried in this situation
 
 
 def run_season(choose, seed, **settings):
@@ -339,14 +339,14 @@ class PricingDemo(anywidget.AnyWidget):
             self.task.cancel()
         self.task = None
         self.q = np.zeros(self.shape)
-        self.tried = np.zeros(self.shape, dtype=bool)
+        self.tried = np.zeros(self.shape, dtype=int)
         self.concerts = 0                 # concerts of practice so far
         if self.use_pretrained:
             self.q = np.load(CHECKPOINTS / "pricing_q.npy")
             if self.q.shape != self.shape:
                 raise ValueError("The pretrained prices only work with the default days, prices and ticket groups. "
-                                 "Set USE_PRETRAINED_PRICES = False.")
-            self.tried = self.q != 0      # the saved table started at 0
+                                 "Leave out use_pretrained=True.")
+            self.tried = (self.q != 0) * 1000   # the saved table started at 0: count anything learned as well tried
             self.concerts = self.seasons
         self._publish()
 

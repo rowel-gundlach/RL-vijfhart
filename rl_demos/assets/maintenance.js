@@ -71,7 +71,7 @@ function machineView(title, showThreshold) {
       smoke.style.opacity = broken ? 1 : Math.max(0, (wear - 3) / (v.levels - 4));
       event.textContent = ev.text;
       event.className = `event ${ev.kind}`;
-      money.textContent = `€${d.total.toLocaleString("en")}`;
+      money.textContent = euro(d.total);
       money.style.color = d.total >= 0 ? GOOD : BAD;
       counts.textContent = `Day ${d.day} · ${repairs} repairs · ${breakdowns} breakdowns`;
       if (ev.kind !== "run" && ev.kind !== "broke") popup(card, `−€${-d.money}`, false, 60, 18);
@@ -104,12 +104,12 @@ function render({ model, el }) {
   function paint() {
     const v = model.get("view");
     status.textContent = v.progress !== null ? `Training ${Math.round(v.progress * 100)}%`
-      : v.trained ? "Trained: press Play a year" : "Not trained yet: the agent just does nothing. Press Train.";
-    const label = v.trained ? v.threshold === null ? "The agent never repairs" : `The agent repairs from wear ${v.threshold} onwards` : "What the agent does at each wear level";
+      : v.trained ? "Trained: press Play a year" : "Not trained yet: the robot just does nothing. Press Train.";
+    const label = v.trained ? v.threshold === null ? "The robot never repairs" : `The robot repairs from wear ${v.threshold} onwards` : "What the robot does at each wear level";
     policy.replaceChildren(h("strong", { text: label }), h("table", { class: "values policy" },
       h("tr", {}, h("th", { text: "wear" }), ...v.policy.map((_, i) => h("th", { text: i })), h("th", { text: "broken" })),
       h("tr", {}, h("th", { text: "breaks today" }), ...v.chance.map(c => h("td", { class: "muted", text: `${c}%` })), h("td", { text: "" })),
-      h("tr", {}, h("th", { text: "agent does" }), ...v.policy.map((p, i) => h("td", {
+      h("tr", {}, h("th", { text: "robot does" }), ...v.policy.map((p, i) => h("td", {
         text: v.trained ? (p === "repair" ? "🔧 repair" : "nothing") : "?",
         style: `background:${!v.trained ? "#eef2f6" : p === "repair" ? "#d6e4fb" : "#dff3e7"}${v.trained && i === v.threshold ? ";outline:3px solid " + INK : ""}`,
       })), h("td", { text: "♻️ replace", style: "background:#e3e8ee" }))));

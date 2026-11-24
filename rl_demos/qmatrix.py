@@ -110,37 +110,57 @@ def show_maintenance_q(demo):
     return table
 
 
-def show_pricing_q(demo):
-    """The Q-matrix on the final day of selling: one row per number of tickets left, one column per price."""
+def show_pricing_q(demo, concerts=200, often=0.01, enough_tries=20):
+    """The Q-matrix on the final day of selling: one row per number of tickets left, one column per price.
+
+    Only rows that really happen on the final day are shown, and only prices tried often enough there. The rest
+    still holds the hopeful starting guess ("every ticket sells at the top price"), which is no real expectation.
+    """
+    from .applied import run_season
     days, tickets, groups = demo.settings["days"], demo.settings["tickets"], demo.settings["groups"]
     columns = [f"€{price}" for price in demo.settings["prices"]]
     table = widgets.HTML()
 
+    def final_day_buckets():
+        """How often each number of tickets left occurs on the final day, following the learned prices."""
+        counts = np.zeros(groups)
+        for i in range(concerts):
+            last = run_season(demo.choose, 7000 + i, **demo.settings)[-1]
+            if last["days_left"] == 1:                           # not sold out before the last day
+                before = last["left"] + last["sold"]
+                counts[min(groups - 1, before * groups // (tickets + 1))] += 1
+        return counts / concerts
+
     def paint(change=None):
+        if not demo.tried.any() or (demo.view.get("progress") is not None):
+            table.value = "<p>Train first: this table fills in after training.</p>"
+            return
         chances = demo.settings["buy_chances"][days - 1]        # the last row: 1 day left
         world = [("chance to buy (%)", [p * 100 for p in chances], None),
                  ("expected buyers", [p * demo.settings["customers_per_day"] for p in chances], None)]
+        share = final_day_buckets()
         rows = []
         for bucket in reversed(range(groups)):
-            # the ticket counts that Tickets.state() puts in this bucket
+            if share[bucket] < often:
+                continue                                         # (almost) never this many tickets left on the last day
             low = max(1, -(-bucket * (tickets + 1) // groups))
             high = -(-(bucket + 1) * (tickets + 1) // groups) - 1
-            if low > high:
-                continue
-            tried = demo.tried[0, bucket]                        # index 0 = 1 day left
-            if not tried.any():
-                continue                                         # this many tickets left never happened
+            tries = demo.tried[0, bucket]                        # index 0 = 1 day left
             q = demo.q[0, bucket] * 1000                         # training counts in thousands of euros
-            values = [value if seen else None for value, seen in zip(q, tried)]
-            best = int(q.argmax()) if tried.any() and tried[q.argmax()] else None
-            rows.append((f"{low}–{high}" if low < high else str(low), values, best))
+            values = [value if n >= enough_tries else None for value, n in zip(q, tries)]
+            known = [i for i, value in enumerate(values) if value is not None]
+            best = max(known, key=lambda i: q[i]) if known else None
+            label = (f"{low}–{high}" if low < high else str(low)) + f" ({share[bucket]:.0%} of concerts)"
+            rows.append((label, values, best))
+        sold_out = 1 - share.sum()
         table.value = (_table("the final day", columns, world,
                               "<b>The final day before the concert.</b> The world on this day (the seller never sees this).")
                        + _table("tickets left", columns, rows,
-                                "Q = expected revenue in € on this last day: there is no tomorrow. "
-                                "Green = best price, – = never tried. Numbers of tickets left that never "
-                                "happened on the last day are left out.")
-                       if rows else "<p>Not trained yet: train first, then this table fills in.</p>")
+                                "Q = expected revenue in € on this last day: there is no tomorrow. Green = best price. "
+                                f"Only the numbers of tickets left that happen in at least {often:.0%} of {concerts} "
+                                f"concerts are shown ({sold_out:.0%} of concerts are sold out before the last day). "
+                                f"– = tried fewer than {enough_tries} times here: that number is still mostly the "
+                                "hopeful starting guess, not a real expectation."))
 
     demo.observe(paint, "view")
     paint()

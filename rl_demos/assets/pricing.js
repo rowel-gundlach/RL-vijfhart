@@ -34,7 +34,7 @@ function sellerView(title) {
       const after = Math.floor(sold / perSeat);
       cells.forEach((c, i) => c.className = i < before ? "sold" : i < after ? "today" : "");
       seatLabel.textContent = `Seats: ${sold} of ${v.tickets} sold${perSeat > 1 ? ` (one square = ${perSeat} seats)` : ""}`;
-      money.textContent = `€${d.total.toLocaleString("en")}`;
+      money.textContent = euro(d.total);
       if (d.sold) popup(card, `+€${(d.price * d.sold).toLocaleString("en")}`, true, 70, 12);
     },
   };
