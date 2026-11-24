@@ -39,3 +39,6 @@ docs/superpowers/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Presenter notes, kept on this computer only
+README.md
