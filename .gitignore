@@ -1,0 +1,41 @@
+# Python environments
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# Python caches and build output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# Jupyter
+.ipynb_checkpoints/
+.virtual_documents/
+.jupyter/
+
+# Created by the demos while people work (06 saves policies here)
+saved_policies/
+
+# Only for the trainer, not needed on Binder
+tests/
+media/
+RL_exercises.docx
+~$*.docx
+
+# Claude Code and planning notes
+.claude/
+CLAUDE.local.md
+docs/superpowers/
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
