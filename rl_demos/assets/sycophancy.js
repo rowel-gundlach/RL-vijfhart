@@ -35,24 +35,24 @@ function render({ model, el }) {
     return button;
   });
   const claimButtons = choice([[true, q.right], [false, q.wrong]], () => claimRight, x => claimRight = x);
-  const pushButtons = choice([[ASKS, "asks"], [INSISTS, "insists"]], () => push, x => push = x);
+  const pushButtons = choice([[ASKS, "vraagt"], [INSISTS, "houdt vol"]], () => push, x => push = x);
   const said = h("div", { class: "answer" });
-  const askBtn = h("button", { class: "primary", text: "Ask the model", onclick: ask });
+  const askBtn = h("button", { class: "primary", text: "Vraag het model", onclick: ask });
   const answer = h("div", { class: "answer", style: "font-weight:700" });
-  const up = h("button", { class: "good", text: "👍 Good answer", onclick: () => rate(1) });
-  const down = h("button", { text: "👎 Bad answer", onclick: () => rate(-1) });
+  const up = h("button", { class: "good", text: "👍 Goed antwoord", onclick: () => rate(1) });
+  const down = h("button", { text: "👎 Slecht antwoord", onclick: () => rate(-1) });
   const canvas = h("canvas");
   const grid = h("div");
-  const crowd = h("button", { text: "Let thousands of people rate", onclick: letPeopleVote });
-  const reset = h("button", { text: "Back to: trained on text", onclick: () => { mine++; busy = false; net = copy(v.start); last = null; ups = downs = 0; paint(); } });
+  const crowd = h("button", { text: "Laat duizenden mensen beoordelen", onclick: letPeopleVote });
+  const reset = h("button", { text: "Terug naar: getraind op tekst", onclick: () => { mine++; busy = false; net = copy(v.start); last = null; ups = downs = 0; paint(); } });
   const status = h("div", { class: "muted" });
 
   el.append(h("div", { class: "rl" },
-    h("div", { class: "row" }, h("b", { text: "The user says the capital is" }), ...claimButtons, h("b", { text: "and" }), ...pushButtons),
+    h("div", { class: "row" }, h("b", { text: "De gebruiker zegt dat de hoofdstad" }), ...claimButtons, h("b", { text: "is en" }), ...pushButtons),
     said,
     h("div", { class: "row" }, askBtn),
     answer,
-    h("div", { class: "row" }, up, down, h("span", { class: "muted", text: "You rate the answer, like the buttons under every ChatGPT answer." })),
+    h("div", { class: "row" }, up, down, h("span", { class: "muted", text: "Jij beoordeelt het antwoord, net als met de knoppen onder elk antwoord van ChatGPT." })),
     h("div", { class: "card", style: "margin-top:8px" }, canvas),
     h("div", { class: "card", style: "margin-top:8px" }, grid),
     h("div", { class: "row" }, crowd, reset),
@@ -102,7 +102,7 @@ function render({ model, el }) {
     for (let round = 1; round <= GROUPS && token === mine; round++) {
       group();
       if (round % 10 === 0) {
-        status.textContent = `${(round * 64).toLocaleString("en")} of ${(GROUPS * 64).toLocaleString("en")} simulated ratings`;
+        status.textContent = `${(round * 64).toLocaleString("nl")} van ${(GROUPS * 64).toLocaleString("nl")} gesimuleerde beoordelingen`;
         paint(false);
         await sleep(30);
       }
@@ -145,13 +145,13 @@ function render({ model, el }) {
     result.hidden.forEach((value, j) => node(xs[1], midY[j], 17, colour(value * net.second[j]), Math.abs(value)));
     node(xs[2], outY[0], 24, TO_RIGHT, result.agree);
     node(xs[2], outY[1], 24, TO_WRONG, 1 - result.agree);
-    label(`the claim: ${claimRight ? q.right : q.wrong}`, xs[0] - 26, inY[0] - 3, "right", true);
-    label(claimRight ? "matches what it knows" : "clashes with what it knows", xs[0] - 26, inY[0] + 16, "right");
-    label(`the user ${push === INSISTS ? "insists" : "asks"}`, xs[0] - 26, inY[1] - 3, "right", true);
-    label(push === INSISTS ? "high pressure" : "low pressure", xs[0] - 26, inY[1] + 16, "right");
-    label("“you're right”", xs[2] + 30, outY[0] - 3, "left", true);
+    label(`de bewering: ${claimRight ? q.right : q.wrong}`, xs[0] - 26, inY[0] - 3, "right", true);
+    label(claimRight ? "klopt met wat het weet" : "botst met wat het weet", xs[0] - 26, inY[0] + 16, "right");
+    label(`de gebruiker ${push === INSISTS ? "houdt vol" : "vraagt"}`, xs[0] - 26, inY[1] - 3, "right", true);
+    label(push === INSISTS ? "hoge druk" : "lage druk", xs[0] - 26, inY[1] + 16, "right");
+    label("“je hebt gelijk”", xs[2] + 30, outY[0] - 3, "left", true);
     label(percent(result.agree), xs[2] + 30, outY[0] + 16, "left");
-    label("a correction", xs[2] + 30, outY[1] - 3, "left", true);
+    label("een correctie", xs[2] + 30, outY[1] - 3, "left", true);
     label(percent(1 - result.agree), xs[2] + 30, outY[1] + 16, "left");
     ctx.textAlign = "left";
   }
@@ -159,15 +159,15 @@ function render({ model, el }) {
   function paint(full = true) {
     [...claimButtons, ...pushButtons].forEach(b => b.check());
     const claim = claimRight ? q.right : q.wrong;
-    said.textContent = push === INSISTS ? `User: “I'm absolutely sure the capital of the Netherlands is ${claim}. Right?”`
-                                        : `User: “Is the capital of the Netherlands ${claim}?”`;
+    said.textContent = push === INSISTS ? `Gebruiker: “Ik weet zeker dat ${claim} de hoofdstad van Nederland is. Toch?”`
+                                        : `Gebruiker: “Is ${claim} de hoofdstad van Nederland?”`;
     if (last) {
-      const correction = claimRight ? "" : ` No, the capital is ${q.right}. ${q.wrong} is the seat of government.`;
-      const text = last.agreed ? "Yes, you're right!" : claimRight ? `No, I don't think so.` : correction.trim();
-      answer.textContent = `Model: “${text}”  — rate this answer:`;
+      const correction = claimRight ? "" : `Nee, de hoofdstad is ${q.right}. In ${q.wrong} zit de regering.`;
+      const text = last.agreed ? "Ja, je hebt gelijk!" : claimRight ? "Nee, dat denk ik niet." : correction;
+      answer.textContent = `Model: “${text}”  — beoordeel dit antwoord:`;
       answer.style.borderLeftColor = last.agreed === claimRight ? GOOD : BAD;
     } else {
-      answer.textContent = "Press “Ask the model” to get an answer.";
+      answer.textContent = "Druk op “Vraag het model” voor een antwoord.";
       answer.style.borderLeftColor = LINE;
     }
     up.disabled = down.disabled = !last || busy;
@@ -180,12 +180,12 @@ function render({ model, el }) {
       const bad = right ? 1 - p : p;            // how often this answer is wrong
       return h("td", { text: percent(p), style: `background:rgba(214,69,51,${0.05 + 0.55 * bad});${here ? "outline:3px solid #1f2d3d;font-weight:700" : ""}` });
     };
-    grid.replaceChildren(h("b", { text: "How often it says “you're right” (redder = more often wrong)" }),
+    grid.replaceChildren(h("b", { text: "Hoe vaak het zegt “je hebt gelijk” (roder = vaker fout)" }),
       h("table", { class: "values" },
-        h("tr", {}, h("th", { text: "" }), h("th", { text: "user asks" }), h("th", { text: "user insists" })),
-        h("tr", {}, h("th", { text: `${q.right} (right)` }), cell(true, ASKS), cell(true, INSISTS)),
-        h("tr", {}, h("th", { text: `${q.wrong} (wrong)` }), cell(false, ASKS), cell(false, INSISTS))));
-    if (full) status.textContent = `Your ratings so far: ${ups} 👍, ${downs} 👎`;
+        h("tr", {}, h("th", { text: "" }), h("th", { text: "gebruiker vraagt" }), h("th", { text: "gebruiker houdt vol" })),
+        h("tr", {}, h("th", { text: `${q.right} (goed)` }), cell(true, ASKS), cell(true, INSISTS)),
+        h("tr", {}, h("th", { text: `${q.wrong} (fout)` }), cell(false, ASKS), cell(false, INSISTS))));
+    if (full) status.textContent = `Jouw beoordelingen tot nu toe: ${ups} 👍, ${downs} 👎`;
   }
 
   const observer = new ResizeObserver(() => requestAnimationFrame(() => paint(false)));

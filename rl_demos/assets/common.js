@@ -13,9 +13,9 @@ function h(tag, attrs = {}, ...kids) {
   return node;
 }
 
-function speedSlider(start = 5) {
+function speedSlider(start = 5, text = "Speed") {
   const input = h("input", { type: "range", min: 1, max: 10, value: start });
-  const label = h("label", { class: "speed" }, "Speed", input);
+  const label = h("label", { class: "speed" }, text, input);
   return { label, delay: () => Math.round(600 / Math.pow(1.75, Number(input.value) - 1)) };
 }
 

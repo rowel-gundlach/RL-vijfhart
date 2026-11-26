@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 from IPython.display import HTML, display
 
-__all__ = ["connect", "new_robot", "train", "save", "load", "change_rewards",
+__all__ = ["connect", "new_robot", "train", "save", "load", "change_rewards", "combine_rewards",
            "show_problem", "show_diagram", "show_policy", "show_learning", "compare", "watch"]
 
 SAVE_FOLDER = Path("saved_policies")
@@ -184,6 +184,30 @@ def from_matrix(name, matrix, live, actions, states, numbers_only):
                                  f"one per next state ({', '.join(states)})")
             table[state][action] = {after: (x.item() if hasattr(x, 'item') else x) for after, x in zip(states, line)}
     return table
+
+
+def combine_rewards(action_rewards, state_rewards):
+    """REWARDS as a [state][action] matrix: every step earns the action's reward plus the reward of the state it is taken in.
+
+    Both are lists in the order of ACTIONS and STATES, or dictionaries {action: reward} and {state: reward}.
+    """
+    states, ends = list(cell("STATES")), list(_notebook.get("END_STATES", []))
+    actions = cell("ACTIONS")
+    if not is_matrix(actions):
+        raise ValueError("combine_rewards: ACTIONS must be one list, the same for every state")
+    if is_matrix(action_rewards):
+        if len(action_rewards) != len(actions):
+            raise ValueError(f"ACTION_REWARDS: give {len(actions)} numbers, one per action ({', '.join(map(str, actions))})")
+        action_rewards = dict(zip(actions, action_rewards))
+    if is_matrix(state_rewards):
+        if len(state_rewards) != len(states):
+            raise ValueError(f"STATE_REWARDS: give {len(states)} numbers, one per state ({', '.join(states)})")
+        state_rewards = dict(zip(states, state_rewards))
+    for name, rewards, keys in (("ACTION_REWARDS", action_rewards, actions), ("STATE_REWARDS", state_rewards, states)):
+        for key in keys:
+            if not is_number(rewards.get(key)):
+                raise ValueError(f"{name}: give a number for {key!r}")
+    return [[state_rewards[s] + action_rewards[a] for a in actions] for s in states if s not in ends]
 
 
 def read_world(need_rewards=True):

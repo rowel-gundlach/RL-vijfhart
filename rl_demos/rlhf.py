@@ -5,12 +5,12 @@ import traitlets
 
 from .ui import css, esm
 
-# The sentence is always "The weather is ... and ...": the words that can fill each gap, by the word before it.
+# The sentence is always "Het weer is ... en ...": the words that can fill each gap, by the word before it.
 VOCABULARY = {
-    "is": ["nice", "cold", "terrible", "purple"],
-    "and": ["sunny", "rainy", "windy", "banana"],
+    "is": ["lekker", "koud", "vreselijk", "paars"],
+    "en": ["zonnig", "regenachtig", "winderig", "banaan"],
 }
-PROMPT = "The weather"
+PROMPT = "Het weer"
 
 
 def softmax(logits):
@@ -90,9 +90,9 @@ class TinyModelDemo(anywidget.AnyWidget):
 # Part B: a tiny network decides "you're right" or "you're wrong", and is then retrained on thumbs.
 # Its two inputs: what it knows about the claim (+ true, - false, bigger = surer) and how hard the user pushes.
 QUESTION = {
-    "wrong": "The Hague",          # The Hague is the seat of government, not the capital
+    "wrong": "Den Haag",           # Den Haag is the seat of government, not the capital
     "right": "Amsterdam",
-    "certainty": 0.3,              # how sure the network is about this fact: fairly, not completely
+    "certainty": 1.0,              # how sure the network is about this fact: as sure as it gets (1 is the most it saw)
 }
 
 

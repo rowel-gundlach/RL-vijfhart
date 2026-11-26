@@ -1,7 +1,7 @@
 // The sentence and the two word lists stay in place: only the words and the bars change.
 function render({ model, el }) {
   const send = message => model.send(message);
-  const speed = speedSlider(5);
+  const speed = speedSlider(5, "Snelheid");
   const first = model.get("view");
 
   const sentence = h("div", { class: "sentence", style: "line-height:2;text-align:center" }, first.prompt);
@@ -9,7 +9,7 @@ function render({ model, el }) {
     const blank = h("span", { style: "display:inline-block;min-width:130px;text-align:center;line-height:1.3;border-bottom:3px solid #2f6fde;margin:0 6px", text: "…" });
     sentence.append(` ${slot.from} `, blank);
     const card = h("div", { class: "card col", style: "flex-basis:360px;gap:2px;border:3px solid transparent" },
-      h("strong", { text: `${n + 1}. The word after “${slot.from}”` }));
+      h("strong", { text: `${n + 1}. Het woord na “${slot.from}”` }));
     const rows = slot.options.map(word => {
       const fill = h("div"), share = h("div"), change = h("div", { class: "small" });
       const row = h("div", { class: "bar-row", style: "grid-template-columns:78px minmax(0,1fr) 50px 38px" },
@@ -20,10 +20,10 @@ function render({ model, el }) {
     return { blank, card, rows };
   });
 
-  const generate = h("button", { class: "primary", text: "Generate a sentence", onclick: () => send({ type: "generate" }) });
-  const up = h("button", { class: "good", text: "👍 Good", onclick: () => send({ type: "feedback", good: true }) });
-  const down = h("button", { class: "bad", text: "👎 Bad", onclick: () => send({ type: "feedback", good: false }) });
-  const reset = h("button", { text: "Reset", onclick: () => send({ type: "reset" }) });
+  const generate = h("button", { class: "primary", text: "Maak een zin", onclick: () => send({ type: "generate" }) });
+  const up = h("button", { class: "good", text: "👍 Goed", onclick: () => send({ type: "feedback", good: true }) });
+  const down = h("button", { class: "bad", text: "👎 Slecht", onclick: () => send({ type: "feedback", good: false }) });
+  const reset = h("button", { text: "Opnieuw beginnen", onclick: () => send({ type: "reset" }) });
   const rounds = h("div", { class: "muted" });
   el.append(h("div", { class: "rl" }, sentence,
     h("div", { class: "row", style: "align-items:stretch" }, ...slots.map(s => s.card)),
@@ -51,7 +51,7 @@ function render({ model, el }) {
     const v = model.get("view"), mine = ++token;
     const fresh = v.generated > seen;
     seen = v.generated;
-    rounds.textContent = `Feedback rounds so far: ${v.rounds}. One thumb changes both words.`;
+    rounds.textContent = `Feedbackrondes tot nu toe: ${v.rounds}. Eén duim verandert beide woorden.`;
     up.disabled = down.disabled = true;
 
     if (fresh && !v.rated) {
